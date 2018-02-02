@@ -139,6 +139,16 @@
                 .style('fill', 'black')
                 .text("Anzahl");
 
+            svg.append("text")
+                .attr("class", "quelle")
+                .attr("x", width)
+                .attr("y", height + 40)
+                .style("text-anchor", "end")
+                .style('fill', 'black')
+                .style('font-size', 'smaller')
+                .style('fill', 'grey')
+                .text("Quelle: KVBW");
+
         });
     }
 
