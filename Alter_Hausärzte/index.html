@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+    <style>
+    body {
+        width: 100%;
+    }
+
+    .bar {
+        fill: #007BC3;
+        opacity: 0.9;
+    }
+
+    .bar:hover {
+        fill: brown;
+    }
+
+    .label {
+        fill: black;
+    }
+
+    .axis--y .tick line {
+        display: none;
+    }
+
+    .tick line {
+        stroke: #C0C0BB;
+    }
+
+    .axis--x path,
+    .axis--y path {
+        display: none;
+    }
+
+    h4 {
+        text-align: center;
+    }
+    </style>
+    <link rel='stylesheet' type='text/css' href='http://static1.heilbronnerstimme.de/data/styles/css/main/main.css'>
+
+</head>
+
+<body>
+    <h4>Anzahl der Hausärzte nach Altersstufen</h4>
+
+    <script>
+    var margin = {
+        top: 20,
+        right: 20,
+        bottom: 50,
+        left: 80
+    };
+
+    function drawChart() {
+
+        var width = window.innerWidth - margin.left - margin.right;
+        var height = 300 - margin.top - margin.bottom;
+
+        var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var x = d3.scaleLinear()
+            .range([0, width]);
+
+        var y = d3.scaleBand()
+            .range([height, 0]);
+
+        var xAxis = d3.axisBottom(x)
+            .ticks(5)
+            .tickFormat(function(k) {
+                return d3.format(',')(k).replace(',', '.');
+            })
+            .tickSize(-height);
+
+        var yAxis = d3.axisLeft(y);
+
+        d3.csv("data.csv", type, function(error, data) {
+            if (error) throw error;
+
+            x.domain([0, d3.max(data, function(d) { return d.count; })]);
+
+            y.domain(data.map(function(d) { return d.age; }))
+                .paddingInner(0.1)
+                .paddingOuter(0.5);
+
+            svg.append("g")
+                .attr("class", "axis--x")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+            svg.append("g")
+                .attr("class", "axis--y")
+                .call(yAxis);
+
+            svg.selectAll(".bar")
+                .data(data)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", 0)
+                .attr("height", y.bandwidth())
+                .attr("y", function(d) { return y(d.age); })
+                .attr("width", function(d) { return x(d.count); });
+
+            svg.selectAll(".bar-label")
+                .data(data)
+                .enter().append("text")
+                .attr("class", "bar-label")
+                .attr("x", function(d) { return x(d.count) - 10; })
+                .attr("y", function(d) { return y(d.age) - 21; })
+                .attr("dy", y.bandwidth() - 2)
+                .attr("text-anchor", "end")
+                .style('fill', 'white')
+                .text(function(d) { return d.count; });
+
+            // text label for the y axis
+            svg.append("text")
+                .attr("class", "label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -60)
+                .attr("x", height / 2 * -1)
+                .style("text-anchor", "middle")
+                .style('fill', 'black')
+                .text("Alter");
+            // text label x axis
+            svg.append("text")
+                .attr("class", "label")
+                .attr("x", width / 2)
+                .attr("y", height + 40)
+                .style("text-anchor", "middle")
+                .style('fill', 'black')
+                .text("Anzahl");
+
+        });
+    }
+
+    function type(d) {
+        d.count = +d.count;
+        return d;
+    }
+
+    drawChart();
+
+    window.addEventListener('resize', function() {
+        setTimeout(function() {
+            d3.select('body > svg').remove();
+            drawChart();
+        }, 200);
+    });
+    </script>
+
+</body>
